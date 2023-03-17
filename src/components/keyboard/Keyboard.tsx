@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useState} from 'react';
 import {Buttons} from '../buttons/Buttons';
 import {View, Text} from 'react-native';
 import {Styles} from '../styles/Styles';
@@ -29,12 +29,8 @@ export const Keyboard = () => {
           setFloatPart(parseInt(floatPart?.toString() + buttonValue, 10));
         }
       }
-
-      // setFirstNumber(firstNumber);
     }
   };
-
-  console.log(firstNumber, 'first number');
 
   // когда юзер нажимает на цифру то она сохраняется в fistNumber,
   // после выбора операции secondNumber берёт значение firstNumber-а
@@ -52,7 +48,7 @@ export const Keyboard = () => {
           ),
         );
         setFloatPart(null);
-        setFirstNumber(0);
+        setFirstNumber(0); // setFirstNumber(0); //обновляем firstNumber для того чтобы  он стал 0 и мы могли вписать второе число.
         break;
       case '-':
         setSecondNumber(
@@ -91,14 +87,7 @@ export const Keyboard = () => {
         setFirstNumber(firstNumber * -1);
         break;
     }
-    // setFirstNumber(0); //обновляем firstNumber для того чтобы  он стал 0 и мы могли вписать второе число.
   };
-
-  console.log(secondNumber, 'second number');
-
-  // const onPlusMinusPress = () => {
-  //   setCalculation(firstNumber * -1);
-  // };
 
   const clear = (mode?: string | undefined) => {
     setFirstNumber(0);
@@ -223,7 +212,7 @@ export const Keyboard = () => {
         <Buttons title="0" onPress={() => handleNumberPress('0')} />
         <Buttons
           title="⌫"
-          onPress={() => setFirstNumber(Math.floor(firstNumber / 10))} //from the first to the last element, -1 points to the last element of the array
+          onPress={() => setFirstNumber(Math.floor(firstNumber / 10))} // if we use slice(-1 method) from the first to the last element, -1 points to the last element of the array
         />
         <Buttons title="=" isBlue onPress={() => getCalculation()} />
       </View>
