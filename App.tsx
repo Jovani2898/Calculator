@@ -1,12 +1,24 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {SafeAreaView, StyleSheet, Switch} from 'react-native';
 import {ThemeContext} from './src/components/context/ThemeContext';
 import {Keyboard} from './src/components/keyboard/Keyboard';
+import {SplashScreen} from './src/components/screen/SplashScreen';
 
 import {Colors} from './src/components/styles/Colors';
 
 const App = () => {
   const [theme, setTheme] = useState('light');
+  const [playSplash, setPlaySplash] = useState(true);
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setPlaySplash(false);
+    }, 5000);
+
+    return () => {
+      clearTimeout(timeout);
+    };
+  }, []);
 
   return (
     <ThemeContext.Provider value={theme}>
@@ -16,11 +28,20 @@ const App = () => {
             ? styles.container
             : [styles.container, {backgroundColor: 'black'}]
         }>
-        <Switch
-          value={theme === 'light'}
-          onValueChange={() => setTheme(theme === 'light' ? 'dark' : 'light')}
-        />
-        <Keyboard />
+        {playSplash ? (
+          <SplashScreen />
+        ) : (
+          <>
+            <Switch
+              value={theme === 'light'}
+              onValueChange={() =>
+                setTheme(theme === 'light' ? 'dark' : 'light')
+              }
+            />
+
+            <Keyboard />
+          </>
+        )}
       </SafeAreaView>
     </ThemeContext.Provider>
   );

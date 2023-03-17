@@ -16,10 +16,21 @@ export const Keyboard = () => {
     }
   };
 
+  console.log(firstNumber, 'first number');
+
+  // когда юзер нажимает на цифру то она сохраняется в fistNumber,
+  // после выбора операции secondNumber берёт значение firstNumber-а
+  // соответсвено то число которое мы выбираем после выбора операции сохраняется в firstNumber, а первое в secondNumber-е
   const handleOperationPress = (buttonValue: string) => {
     setOperation(buttonValue);
-    setSecondNumber(firstNumber); //same like handleNumberPress
-    setFirstNumber('');
+    setSecondNumber(firstNumber);
+    setFirstNumber(''); //обновляем firstNumber для того чтобы  он стал 0 и мы могли вписать второе число.
+  };
+
+  console.log(secondNumber, 'second number');
+
+  const onPlusMinusPress = () => {
+    setCalculation(parseInt(firstNumber, 10) * -1);
   };
 
   const clear = () => {
@@ -44,7 +55,7 @@ export const Keyboard = () => {
           {calculation.toString()}
         </Text>
       );
-    } else if (firstNumber && firstNumber.length < 6) {
+    } else if (firstNumber.length < 6) {
       return <Text style={Styles.screenFirstNumber}>{firstNumber}</Text>;
     } else if (firstNumber === '') {
       return <Text style={Styles.screenFirstNumber}>{'0'}</Text>;
@@ -68,6 +79,7 @@ export const Keyboard = () => {
       case '+':
         clear();
         setCalculation(parseInt(secondNumber, 10) + parseInt(firstNumber, 10));
+
         break;
       case '-':
         clear();
@@ -83,7 +95,13 @@ export const Keyboard = () => {
         break;
       case '%':
         clear();
-        setCalculation(parseInt(secondNumber, 10) % parseInt(firstNumber, 10));
+        setCalculation(
+          (parseInt(secondNumber, 10) / 100) * parseInt(firstNumber, 10),
+        );
+        break;
+      case '+/-':
+        clear();
+        setSecondNumber((parseInt(secondNumber, 10) * -1).toString());
         break;
       default:
         clear();
@@ -103,6 +121,7 @@ export const Keyboard = () => {
       </View>
       <View style={Styles.row}>
         <Buttons title="C" isGray onPress={clear} />
+        <Buttons title="+/-" isGray onPress={() => onPlusMinusPress()} />
         <Buttons title="%" isGray onPress={() => handleOperationPress('%')} />
         <Buttons title="÷" isBlue onPress={() => handleOperationPress('/')} />
       </View>
