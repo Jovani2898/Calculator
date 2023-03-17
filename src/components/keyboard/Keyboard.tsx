@@ -1,18 +1,36 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {Buttons} from '../buttons/Buttons';
 import {View, Text} from 'react-native';
 import {Styles} from '../styles/Styles';
 import {Colors} from '../styles/Colors';
 
 export const Keyboard = () => {
-  const [firstNumber, setFirstNumber] = useState('');
-  const [secondNumber, setSecondNumber] = useState('');
-  const [operation, setOperation] = useState('');
-  const [calculation, setCalculation] = useState<Number | null>(null);
+  const [firstNumber, setFirstNumber] = useState(0);
+  const [secondNumber, setSecondNumber] = useState(0);
+  const [operation, setOperation] = useState<string | null>(null);
+  const [calculation, setCalculation] = useState<number | null>(null);
+  const [floatPart, setFloatPart] = useState<number | null>(null);
 
   const handleNumberPress = (buttonValue: string) => {
-    if (firstNumber.length < 10) {
-      setFirstNumber(firstNumber + buttonValue);
+    // if (firstNumber < 10) {
+    //   setFirstNumber(firstNumber + parseInt(buttonValue, 10));
+    // }
+
+    if (buttonValue !== '.' && floatPart === null) {
+      if ((firstNumber.toString() + buttonValue).length < 10) {
+        calculation !== null && setCalculation(null);
+        setFirstNumber(parseInt(firstNumber.toString() + buttonValue, 10));
+      }
+    } else {
+      if (floatPart === null) {
+        setFloatPart(0);
+      } else {
+        if (parseInt(floatPart?.toString() + buttonValue, 10) < 1000) {
+          setFloatPart(parseInt(floatPart?.toString() + buttonValue, 10));
+        }
+      }
+
+      // setFirstNumber(firstNumber);
     }
   };
 
@@ -23,21 +41,71 @@ export const Keyboard = () => {
   // соответсвено то число которое мы выбираем после выбора операции сохраняется в firstNumber, а первое в secondNumber-е
   const handleOperationPress = (buttonValue: string) => {
     setOperation(buttonValue);
-    setSecondNumber(firstNumber);
-    setFirstNumber(''); //обновляем firstNumber для того чтобы  он стал 0 и мы могли вписать второе число.
+    switch (buttonValue) {
+      case '+':
+        setSecondNumber(
+          parseFloat(
+            (floatPart !== null
+              ? firstNumber + secondNumber + parseFloat(`0.${floatPart}`)
+              : firstNumber + secondNumber
+            ).toFixed(4),
+          ),
+        );
+        setFloatPart(null);
+        setFirstNumber(0);
+        break;
+      case '-':
+        setSecondNumber(
+          floatPart !== null
+            ? firstNumber + parseFloat(`0.${floatPart}`) - secondNumber
+            : firstNumber - secondNumber,
+        );
+        setFloatPart(null);
+        setFirstNumber(0);
+        break;
+      case '*':
+        setSecondNumber(
+          firstNumber !== 0 && secondNumber !== 0
+            ? firstNumber * secondNumber
+            : firstNumber,
+        );
+        setFloatPart(null);
+        setFirstNumber(0);
+        break;
+      case '/':
+        setSecondNumber(
+          firstNumber !== 0 && secondNumber !== 0
+            ? secondNumber / firstNumber
+            : firstNumber,
+        );
+        setFloatPart(null);
+        setFirstNumber(0);
+        break;
+      case '%':
+        setSecondNumber((secondNumber / 100) * firstNumber);
+        setFloatPart(null);
+        setFirstNumber(0);
+        break;
+      case '+/-':
+        setFloatPart(null);
+        setFirstNumber(firstNumber * -1);
+        break;
+    }
+    // setFirstNumber(0); //обновляем firstNumber для того чтобы  он стал 0 и мы могли вписать второе число.
   };
 
   console.log(secondNumber, 'second number');
 
-  const onPlusMinusPress = () => {
-    setCalculation(parseInt(firstNumber, 10) * -1);
-  };
+  // const onPlusMinusPress = () => {
+  //   setCalculation(firstNumber * -1);
+  // };
 
-  const clear = () => {
-    setFirstNumber('');
-    setSecondNumber('');
+  const clear = (mode?: string | undefined) => {
+    setFirstNumber(0);
+    setSecondNumber(0);
     setOperation('');
-    setCalculation(null);
+    setFloatPart(null);
+    mode && setCalculation(null);
   };
 
   const numberDisplay = () => {
@@ -55,57 +123,58 @@ export const Keyboard = () => {
           {calculation.toString()}
         </Text>
       );
-    } else if (firstNumber.length < 6) {
-      return <Text style={Styles.screenFirstNumber}>{firstNumber}</Text>;
-    } else if (firstNumber === '') {
-      return <Text style={Styles.screenFirstNumber}>{'0'}</Text>;
-    } else if (firstNumber.length > 5 && firstNumber.length < 8) {
-      return (
-        <Text style={[Styles.screenFirstNumber, {fontSize: 70}]}>
-          {firstNumber}
-        </Text>
-      );
-    } else if (firstNumber.length > 7) {
-      return (
-        <Text style={[Styles.screenFirstNumber, {fontSize: 50}]}>
-          {firstNumber}
-        </Text>
-      );
+    } else if (floatPart !== null) {
+      if (floatPart < 1000) {
+        return (
+          <Text style={Styles.screenFirstNumber}>
+            {firstNumber + '.' + floatPart}
+          </Text>
+        );
+      }
+    } else if (floatPart === null) {
+      if (firstNumber < 1000) {
+        return <Text style={Styles.screenFirstNumber}>{firstNumber}</Text>;
+      } else if (firstNumber === 0) {
+        return <Text style={Styles.screenFirstNumber}>{'0'}</Text>;
+      } else if (firstNumber > 1000 && firstNumber < 1000000) {
+        return (
+          <Text style={[Styles.screenFirstNumber, {fontSize: 70}]}>
+            {firstNumber}
+          </Text>
+        );
+      } else if (firstNumber > 1000000) {
+        return (
+          <Text style={[Styles.screenFirstNumber, {fontSize: 50}]}>
+            {firstNumber}
+          </Text>
+        );
+      }
     }
   };
 
   const getCalculation = () => {
     switch (operation) {
       case '+':
+        setCalculation(secondNumber + firstNumber);
         clear();
-        setCalculation(parseInt(secondNumber, 10) + parseInt(firstNumber, 10));
-
         break;
       case '-':
+        setCalculation(secondNumber - firstNumber);
         clear();
-        setCalculation(parseInt(secondNumber, 10) - parseInt(firstNumber, 10));
         break;
       case '*':
+        setCalculation(secondNumber * firstNumber);
         clear();
-        setCalculation(parseInt(secondNumber, 10) * parseInt(firstNumber, 10));
         break;
       case '/':
+        setCalculation(secondNumber / firstNumber);
         clear();
-        setCalculation(parseInt(secondNumber, 10) / parseInt(firstNumber, 10));
         break;
       case '%':
+        setCalculation((secondNumber / 100) * firstNumber);
         clear();
-        setCalculation(
-          (parseInt(secondNumber, 10) / 100) * parseInt(firstNumber, 10),
-        );
-        break;
-      case '+/-':
-        clear();
-        setSecondNumber((parseInt(secondNumber, 10) * -1).toString());
         break;
       default:
-        clear();
-        setCalculation(0);
         break;
     }
   };
@@ -114,14 +183,20 @@ export const Keyboard = () => {
     <View style={Styles.viewBottom}>
       <View style={Styles.displayNumber}>
         <Text style={Styles.screenSecondNumber}>
-          {secondNumber}
-          <Text style={Styles.displayNumberText}>{operation}</Text>
+          {calculation === null && secondNumber}
+          <Text style={Styles.displayNumberText}>
+            {operation !== '+/-' && operation}
+          </Text>
         </Text>
         {numberDisplay()}
       </View>
       <View style={Styles.row}>
-        <Buttons title="C" isGray onPress={clear} />
-        <Buttons title="+/-" isGray onPress={() => onPlusMinusPress()} />
+        <Buttons title="C" isGray onPress={() => clear('full')} />
+        <Buttons
+          title="+/-"
+          isGray
+          onPress={() => handleOperationPress('+/-')}
+        />
         <Buttons title="%" isGray onPress={() => handleOperationPress('%')} />
         <Buttons title="÷" isBlue onPress={() => handleOperationPress('/')} />
       </View>
@@ -148,7 +223,7 @@ export const Keyboard = () => {
         <Buttons title="0" onPress={() => handleNumberPress('0')} />
         <Buttons
           title="⌫"
-          onPress={() => setFirstNumber(firstNumber.slice(0, -1))} //from the first to the last element, -1 points to the last element of the array
+          onPress={() => setFirstNumber(Math.floor(firstNumber / 10))} //from the first to the last element, -1 points to the last element of the array
         />
         <Buttons title="=" isBlue onPress={() => getCalculation()} />
       </View>
